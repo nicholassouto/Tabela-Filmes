@@ -3,9 +3,9 @@ const knex = require("../database/knex");
 class NotesController {
   async create(request, response) {
     const { title, description, rating, tags } = request.body;
-    const { user_id } = request.params;
+    const user_id = request.user.id;
 
-    const [note_id] = await knex("movie_notes").insert({
+    const note_id = await knex("movie_notes").insert({
       title,
       description,
       rating,
@@ -22,7 +22,7 @@ class NotesController {
 
     await knex("movie_tags").insert(tagsInsert);
 
-    response.json();
+    return response.json();
   }
 
   async show(request, response) {
@@ -46,7 +46,8 @@ class NotesController {
   }
 
   async index(request, response) {
-    const { user_id, title, tags } = request.query;
+    const { title, tags } = request.query;
+    const user_id = request.user.id;
 
     let notes;
 
@@ -64,15 +65,15 @@ class NotesController {
       notes = await knex("movie_notes").where({ user_id }).whereLike("title", `%${title}%`).orderBy("title");
     }
 
-    const userTags = await knex("movie_tags").where({user_id});
-    const notesWithTags = notes.map(note =>{
-      const noteTags = userTags.filter(tag => tag.note_id === note.id);
+    const userTags = await knex("movie_tags").where({ user_id });
+    const notesWithTags = notes.map((note) => {
+      const noteTags = userTags.filter((tag) => tag.note_id === note.id);
 
-      return{
+      return {
         ...note,
-        tags: noteTags
-      }
-    })
+        tags: noteTags,
+      };
+    });
 
     return response.json(notesWithTags);
   }

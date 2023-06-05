@@ -11,11 +11,11 @@ class TagsController {
       user_id,
     });
 
-    response.json();
+    return response.json();
   }
 
   async index(request, response) {
-    const { user_id } = request.params;
+    const user_id = request.user.id;
 
     const tags = await knex("movie_tags").where({ user_id });
 
